@@ -49,8 +49,10 @@ def paddingInsideWithMean(data, fixed_increment):
 
 def removeNullRows(data):
     data = data[data['CGM Data'] != '[]']
+    data = data[data['Image Before Lunch'] != '[]']
     data = data.reset_index(drop = True)
     return data
+    
 
 def pad_cgm_sequences(cgm_sequences, pad_value=0.0):
     """
