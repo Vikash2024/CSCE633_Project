@@ -2,5 +2,5 @@
 # image embeddeding
 # tabular embedding 
 
-# Caloriepredictor()
+# Caloriepredictor(str, str, str)
 
