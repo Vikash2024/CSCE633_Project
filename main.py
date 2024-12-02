@@ -13,16 +13,15 @@ if __name__ == "__main__":
                                                     "img_train.csv",
                                                     "label_train.csv")
     best_result = tune_parameters(
-                                    trainer=trainer,
                                     train_dataloader=train_dataloader,
                                     val_dataloader=val_dataloader,
                                     lr=0.01,
                                     epochs=500,
                                     input_dim=2,
                                     output_dim=1,
-                                    model_dim_list=[64,128],
-                                    num_heads_list=[4,8],
-                                    num_layers_list=[4,6],
+                                    model_dim_list=[16,32,128],
+                                    num_heads_list=[2,4],
+                                    num_layers_list=[2,3],
                                     additional_features_dim_list=[28]
                                 )
 

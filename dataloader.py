@@ -38,7 +38,7 @@ class CGMData(Dataset):
 
         return combined_sequence, tabular_features, label
     
-def read_dataset(cgm_data,viome_data,img_data,label):
+def read_dataset(cgm_data,viome_data,img_data,label,flag = True):
     # Load Data from CSV file.
     train_data = pd.read_csv(cgm_data)
     train_labels = pd.read_csv(label)
@@ -64,25 +64,34 @@ def read_dataset(cgm_data,viome_data,img_data,label):
     train_data.drop('CGM Data', axis=1,inplace=True)
     train_data = pd.concat([train_data,cgm_sequences], axis=1)
 
-    # Train / Validation Split.
-    x_train = train_data.iloc[:,2:].drop('Lunch Calories',axis=1)
-    y_train = train_data['Lunch Calories']
+    if flag:
+        # Train / Validation Split.
+        x_train = train_data.iloc[:,2:].drop('Lunch Calories',axis=1)
+        y_train = train_data['Lunch Calories']
 
-    x_train, x_val, y_train, y_val = train_test_split(
-    x_train,         # Features DataFrame
-    y_train,         # Label
-    test_size=0.1,   # Fraction of data for validation
-    random_state=42  # Random seed for reproducibility
-    )
-    x_train = x_train.reset_index(drop=True)
-    x_val   = x_val.reset_index(drop=True)
-    y_train = y_train.reset_index(drop=True)
-    y_val =   y_val.reset_index(drop=True)
-    train_dataset = CGMData(x_train, y_train)
-    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    val_dataset = CGMData(x_val, y_val)
-    val_dataloader =  DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
-    return train_dataloader, val_dataloader
+        x_train, x_val, y_train, y_val = train_test_split(
+        x_train,         # Features DataFrame
+        y_train,         # Label
+        test_size=0.1,   # Fraction of data for validation
+        random_state=42  # Random seed for reproducibility
+        )
+        x_train = x_train.reset_index(drop=True)
+        x_val   = x_val.reset_index(drop=True)
+        y_train = y_train.reset_index(drop=True)
+        y_val =   y_val.reset_index(drop=True)
+        train_dataset = CGMData(x_train, y_train)
+        train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+        val_dataset = CGMData(x_val, y_val)
+        val_dataloader =  DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
+    
+        return train_dataloader, val_dataloader
+    else:
+        x_train = train_data.iloc[:,2:].drop('Lunch Calories',axis=1)
+        y_train = train_data['Lunch Calories']
+        train_dataset = CGMData(x_train, y_train)
+        test_dataloader = DataLoader(train_dataset, batch_size=len(train_dataset), shuffle=True)
+        return test_dataloader
+
 
 def read_dataset_test(cgm_data,viome_data,img_data,label):
     test_data = pd.read_csv(cgm_data)

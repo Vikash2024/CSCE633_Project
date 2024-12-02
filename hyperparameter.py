@@ -2,13 +2,12 @@ from train import *
 import itertools
 
 
-def tune_parameters(trainer, train_dataloader, val_dataloader, lr, epochs, input_dim, output_dim, 
+def tune_parameters(train_dataloader, val_dataloader, lr, epochs, input_dim, output_dim, 
                     model_dim_list, num_heads_list, num_layers_list, additional_features_dim_list):
     """
     Tunes hyperparameters for the Transformer model.
     
     Parameters:
-        trainer (function): The trainer function to train the model.
         train_dataloader (torch.utils.data.dataloader): Training data.
         val_dataloader (torch.utils.data.dataloader): Validation data.
         lr (float): Learning rate.
@@ -24,7 +23,7 @@ def tune_parameters(trainer, train_dataloader, val_dataloader, lr, epochs, input
         dict: Dictionary containing the best model, its parameters, and validation score.
     """
     best_model = None
-    best_score = float('-inf')
+    best_score = float('inf')
     best_params = None
     results = []
 
@@ -67,7 +66,7 @@ def tune_parameters(trainer, train_dataloader, val_dataloader, lr, epochs, input
         })
 
         # Update best model if current one is better
-        if val_score > best_score:
+        if val_score < best_score:
             best_model = model
             best_score = val_score
             best_params = {
@@ -76,11 +75,12 @@ def tune_parameters(trainer, train_dataloader, val_dataloader, lr, epochs, input
                 "num_layers": num_layers,
                 "additional_features_dim": additional_features_dim
             }
+            
 
     print(f"Best Model Found: {best_params} with Validation Score: {best_score}")
     model_state_dir = "best_model_state"
     os.makedirs(model_state_dir, exist_ok=True)
-    filepath_best_model = os.path.join(model_state_dir, f'Best_Model_{best_score}')
+    filepath_best_model = os.path.join(model_state_dir, f'Best_Model_{model_dim}_{num_heads}_{num_layers}')
     torch.save(best_model.state_dict(), filepath_best_model)
 
     return {
@@ -90,23 +90,16 @@ def tune_parameters(trainer, train_dataloader, val_dataloader, lr, epochs, input
         "results": results
     }
 
-# Example of a placeholder validation function
+
 def validate(model, val_dataloader):
     model.eval()
-    total_test_loss = 0
-    total_test_size = 0
-    total_loss = 0.0
-    criterion = rmsre_loss  # Replace with appropriate loss function
     with torch.no_grad():
         for cgm_sequence, tabular_features , test_labels in val_dataloader:
-            cgm_sequence, tabular_features , test_labels = cgm_sequence, tabular_features, test_labels
             predictions = model(cgm_sequence, tabular_features )
-            loss = criterion(predictions.squeeze(), test_labels)
-
-            test_labels = test_labels.cpu()
-            predictions = predictions.cpu()
-            nrmse_val = rmsre_loss(test_labels.numpy(),predictions.squeeze().numpy())
-        return nrmse_val
+            test_labels = test_labels
+            predictions = predictions
+            rmsre_val = rmsre_loss(test_labels.numpy(),predictions.squeeze().numpy())
+        return rmsre_val
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CSCE633 FINAL PROJECT")
