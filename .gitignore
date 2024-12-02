@@ -1,1 +1,4 @@
 *.csv
+Train_Test_loss_graphs/
+Model_Logs/
+best_model_state/
