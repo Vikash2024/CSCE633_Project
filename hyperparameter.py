@@ -80,7 +80,7 @@ def tune_parameters(train_dataloader, val_dataloader, lr, epochs, input_dim, out
     print(f"Best Model Found: {best_params} with Validation Score: {best_score}")
     model_state_dir = "best_model_state"
     os.makedirs(model_state_dir, exist_ok=True)
-    filepath_best_model = os.path.join(model_state_dir, f'Best_Model_{model_dim}_{num_heads}_{num_layers}')
+    filepath_best_model = os.path.join(model_state_dir, f'Best_Model_{epochs}_{input_dim}_{model_dim}_{num_heads}_{num_layers}_{additional_features_dim}_{output_dim}')
     torch.save(best_model.state_dict(), filepath_best_model)
 
     return {
@@ -115,9 +115,9 @@ if __name__ == '__main__':
                                     epochs=500,
                                     input_dim=2,
                                     output_dim=1,
-                                    model_dim_list=[64, 128],
+                                    model_dim_list=[128],
                                     num_heads_list=[4],
-                                    num_layers_list=[2],
+                                    num_layers_list=[3],
                                     additional_features_dim_list=[28]
                                 )
 

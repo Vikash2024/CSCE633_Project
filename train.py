@@ -141,13 +141,16 @@ if __name__ == '__main__':
     parser.add_argument('--runtime',  default = 'testrun')
     args = parser.parse_args()
     runtime = args.runtime
-    train_dataloader, val_dataloader = read_dataset()
+    train_dataloader, val_dataloader = read_dataset("cgm_train.csv",
+                                                    "demo_viome_train_processed.csv",
+                                                    "img_train.csv",
+                                                    "label_train.csv")
    
     # Model Parameters
     input_dim = 2  # CGM data has 2 features: timeInTicks and glucose
     model_dim = 64
     num_heads = 4
-    num_layers = 2
+    num_layers = 3
     additional_features_dim = 1 + 27   #  PCA_VIome
     output_dim = 1  # Lunch calories (regression)
     epoch = 500

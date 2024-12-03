@@ -56,8 +56,7 @@ class TransformerModel(nn.Module):
         # Transformer encoding
         transformer_output = self.transformer_encoder(cgm_embedded)  # (seq_len, batch_size, model_dim)
 
-        
-        # Take the output of the last timestep
+
         transformer_output_last = transformer_output[transformer_output.shape[0] // 2, :, :]  # (batch_size, model_dim)
         
         # Process tabular features
@@ -71,7 +70,7 @@ class TransformerModel(nn.Module):
         additional_features_out = self.dropout(additional_features_out)                     # (batch_size, model_dim)
        
 
-        # Concatenate transformer output, tabular features, and image features
+        # Concatenate transformer output, tabular features
         combined_features = torch.cat((transformer_output_last, additional_features_out), dim=-1)  # (batch_size, 2 * model_dim)
 
         # Final prediction

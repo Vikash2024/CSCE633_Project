@@ -19,9 +19,9 @@ if __name__ == "__main__":
                                     epochs=500,
                                     input_dim=2,
                                     output_dim=1,
-                                    model_dim_list=[16,32,128],
-                                    num_heads_list=[2,4],
-                                    num_layers_list=[2,3],
+                                    model_dim_list=[256,128],
+                                    num_heads_list=[2,4,8],
+                                    num_layers_list=[2],
                                     additional_features_dim_list=[28]
                                 )
 

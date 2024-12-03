@@ -38,7 +38,18 @@ class CGMData(Dataset):
 
         return combined_sequence, tabular_features, label
     
-def read_dataset(cgm_data,viome_data,img_data,label,flag = True):
+def read_dataset(cgm_data   : str,  # Filename of CGM data
+                 viome_data : str,  # Filename of viome data
+                 img_data   : str,  # Filename of image data
+                 label      : str,  # Filename of labels data
+                 flag       : bool = True
+                 ):
+    '''
+    
+    flag : True , for training returns a train and a validation dataset
+           False, for testing returns a test dataset
+
+    '''
     # Load Data from CSV file.
     train_data = pd.read_csv(cgm_data)
     train_labels = pd.read_csv(label)
@@ -93,7 +104,13 @@ def read_dataset(cgm_data,viome_data,img_data,label,flag = True):
         return test_dataloader
 
 
-def read_dataset_test(cgm_data,viome_data,img_data,label):
+def read_dataset_test(cgm_data    : str,
+                      viome_data  : str,
+                      img_data    : str,
+                      label       : str):
+    '''
+    This function is used to return a dataset just for predicting and doesnt look for lunch calories.
+    '''
     test_data = pd.read_csv(cgm_data)
     test_labels = pd.read_csv(label)
     viome_data_test = pd.read_csv(viome_data).drop("Unnamed: 0", axis=1)
