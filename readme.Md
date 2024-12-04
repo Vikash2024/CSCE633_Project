@@ -11,7 +11,7 @@ First, process the viome data.
 
 '''bash
 python viome_process.py
-'''
+
 
 Running the command above will give out two csv files: demo_viome_train_processed.csv and demo_viome_test_processed.csv. 
 
@@ -19,13 +19,12 @@ To train and find the best model and test it on the test set, use the following 
 
 '''bash
 python main.py
-'''
+
 
 In order test an already pre trained model, use the following command and ensure to enter the model name. For example, if the 
 
 '''bash
 python check_model_easy.py [model_name]
-'''
 
 
 
