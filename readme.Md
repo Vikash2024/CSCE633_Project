@@ -9,23 +9,30 @@ Ensure to have the following files in the same directory: cgm_train.csv, cgm_tes
 
 First, process the viome data. 
 
-'''bash
+```python
 python viome_process.py
-
+```
 
 Running the command above will give out two csv files: demo_viome_train_processed.csv and demo_viome_test_processed.csv. 
 
 To train and find the best model and test it on the test set, use the following command. The best model weights will be stored n the folder 'best_model_state'
 
-'''bash
+```python
 python main.py
-
+```
 
 In order test an already pre trained model, use the following command and ensure to enter the model name. For example, if the 
 
-'''bash
+Make sure the model is kept in the dir best_model_state
+Make sure all the file name have been entered in the script before running the code.
+
+```python
 python check_model_easy.py [model_name]
+```
 
-
+# to get the best model
+```python
+python check_model_easy.py Best_Model_128_2_3.pkl
+```
 
 
