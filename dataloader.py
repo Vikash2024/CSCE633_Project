@@ -36,17 +36,25 @@ class CGMData(Dataset):
         
         label = torch.tensor(self.labels[idx], dtype=torch.float32)
 
-        lunch_image = row['Image Before Lunch']
-        lunch_image = torch.tensor(lunch_image, dtype=torch.float32).permute(2, 0, 1)  # Convert to (C, H, W)
-
-        return combined_sequence, tabular_features, lunch_image , label
+        return combined_sequence, tabular_features, label
     
-def read_dataset():
+def read_dataset(cgm_data   : str,  # Filename of CGM data
+                 viome_data : str,  # Filename of viome data
+                 img_data   : str,  # Filename of image data
+                 label      : str,  # Filename of labels data
+                 flag       : bool = True
+                 ):
+    '''
+    
+    flag : True , for training returns a train and a validation dataset
+           False, for testing returns a test dataset
+
+    '''
     # Load Data from CSV file.
-    train_data = pd.read_csv('cgm_train.csv')
-    train_labels = pd.read_csv('label_train.csv')
-    viome_data_train = pd.read_csv("demo_viome_train_processed.csv").drop("Unnamed: 0", axis=1)
-    image_data_train = pd.read_csv("img_train.csv").drop('Image Before Breakfast', axis = 1)
+    train_data = pd.read_csv(cgm_data)
+    train_labels = pd.read_csv(label)
+    viome_data_train = pd.read_csv(viome_data).drop("Unnamed: 0", axis=1)
+    image_data_train = pd.read_csv(img_data).drop('Image Before Breakfast', axis = 1)
 
     # Merge Data to a single dataframe
     train_data = pd.merge(train_data, viome_data_train, how="left")
@@ -67,25 +75,67 @@ def read_dataset():
     train_data.drop('CGM Data', axis=1,inplace=True)
     train_data = pd.concat([train_data,cgm_sequences], axis=1)
 
-    # Train / Validation Split.
-    x_train = train_data.iloc[:,2:].drop('Lunch Calories',axis=1)
-    y_train = train_data['Lunch Calories']
+    if flag:
+        # Train / Validation Split.
+        x_train = train_data.iloc[:,2:].drop('Lunch Calories',axis=1)
+        y_train = train_data['Lunch Calories']
 
-    x_train, x_val, y_train, y_val = train_test_split(
-    x_train,         # Features DataFrame
-    y_train,         # Label
-    test_size=0.1,   # Fraction of data for validation
-    random_state=42  # Random seed for reproducibility
-    )
-    x_train = x_train.reset_index(drop=True)
-    x_val   = x_val.reset_index(drop=True)
-    y_train = y_train.reset_index(drop=True)
-    y_val =   y_val.reset_index(drop=True)
-    train_dataset = CGMData(x_train, y_train)
-    train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-    val_dataset = CGMData(x_val, y_val)
-    val_dataloader =  DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
-    return train_dataloader, val_dataloader
+        x_train, x_val, y_train, y_val = train_test_split(
+        x_train,         # Features DataFrame
+        y_train,         # Label
+        test_size=0.1,   # Fraction of data for validation
+        random_state=42  # Random seed for reproducibility
+        )
+        x_train = x_train.reset_index(drop=True)
+        x_val   = x_val.reset_index(drop=True)
+        y_train = y_train.reset_index(drop=True)
+        y_val =   y_val.reset_index(drop=True)
+        train_dataset = CGMData(x_train, y_train)
+        train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+        val_dataset = CGMData(x_val, y_val)
+        val_dataloader =  DataLoader(val_dataset, batch_size=len(val_dataset), shuffle=False)
+    
+        return train_dataloader, val_dataloader
+    else:
+        x_train = train_data.iloc[:,2:].drop('Lunch Calories',axis=1)
+        y_train = train_data['Lunch Calories']
+        train_dataset = CGMData(x_train, y_train)
+        test_dataloader = DataLoader(train_dataset, batch_size=len(train_dataset), shuffle=True)
+        return test_dataloader
+
+
+def read_dataset_test(cgm_data    : str,
+                      viome_data  : str,
+                      img_data    : str,
+                      label       : str):
+    '''
+    This function is used to return a dataset just for predicting and doesnt look for lunch calories.
+    '''
+    test_data = pd.read_csv(cgm_data)
+    test_labels = pd.read_csv(label)
+    viome_data_test = pd.read_csv(viome_data).drop("Unnamed: 0", axis=1)
+    image_data_test = pd.read_csv(img_data).drop('Image Before Breakfast', axis = 1)
+
+    test_data = pd.merge(test_data, viome_data_test, how="left", on="Subject ID")
+    test_data = pd.merge(test_data, image_data_test, how= "left")
+    test_data = pd.concat([test_data, test_labels['Breakfast Calories']], axis=1)
+
+    test_data = removeNullRows(test_data)
+    test_data['CGM Data'] =  test_data['CGM Data'].apply(lambda x: eval(x))
+    test_data['Image Before Lunch'] = test_data['Image Before Lunch'].apply(lambda x : np.array(eval(x)))
+    test_data = convertTimeStrToTicks(test_data)
+    test_data['CGM Data'] = test_data['CGM Data'].apply(lambda x : paddingInsideWithMean(x,300))
+    test_data.drop(['Breakfast Time','Lunch Time'],axis = 1,inplace= True)
+    cgm_sequences_test = test_data['CGM Data']
+    cgm_sequences_test = pad_cgm_sequences(cgm_sequences_test)
+    cgm_sequences_test  = pd.DataFrame({'CGM Data': [cgm_sequences_test[i] for i in range(cgm_sequences_test.shape[0])]})
+    test_data.drop('CGM Data', axis=1,inplace=True)
+    test_data = pd.concat([test_data,cgm_sequences_test], axis=1)
+    x_test = test_data.iloc[:,2:]
+    y_dummy = np.zeros(x_test.shape[0])
+    test_dataset = CGMData(x_test, y_dummy)
+    test_dataloader = DataLoader(test_dataset, batch_size=x_test.shape[0], shuffle=False)
+    return test_dataloader
 
 
 if __name__ == '__main__':
